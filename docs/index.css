@@ -1,0 +1,191 @@
+* {
+    font-size: 10px;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Montserrat', sans-serif;
+}
+
+body {
+    width: 100vw;
+    height: 100vh;
+    background-color: rgb(50, 56, 56);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.sidebar {
+    position: absolute;
+}
+
+.sidebar.left {
+    width: 40rem;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    background-color: rgb(42, 45, 48);
+    padding: 2rem;
+}
+
+.sidebar.right {
+    width: 40rem;
+    height: 90vh;
+    right: 5rem;
+    background-color: rgb(123, 139, 155);
+    border-radius: 2rem;
+    display: flex;
+    flex-direction: column;
+    row-gap: 2rem;
+    justify-content: flex-start;
+    align-items: center;
+    padding-top: 1rem;
+}
+
+.logoContainer {
+    position: relative;
+}
+
+.chessLogoImg {
+    width: 5rem;
+}
+
+.logoText {
+    position: absolute;
+    left: 3rem;
+    top: 2rem;
+}
+
+.logoText > .logo1 {
+    font-weight: 700;
+    font-size: 5rem;
+    color: white;
+}
+
+.logoText > .logo2 {
+    font-weight: 700;
+    font-size: 3rem;
+    color: white;
+    position: relative;
+    left: -0.4rem;
+}
+
+.boardColorThemeSetter {
+    background-color: aliceblue;
+    width: 95%;
+    height: 8rem;
+    border-radius: 1rem;
+}
+
+.board {
+    background-color: rgba(0, 255, 255, 0.075);
+    width: 80rem;
+    height: 80rem;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+}
+
+.board.flipped {
+    transform: rotate(180deg);
+}
+
+.board > * {
+    /* border: 1px solid black; */
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+div[theme = 'GREEN'] .square.light {
+    background-color: #779954;
+}
+
+div[theme = 'GREEN'] .square.light .row-marking, div[theme = 'GREEN'] .square.light .col-marking{
+    color: #e9edcc;
+}
+
+div[theme = 'GREEN'] .square.dark {
+    background-color: #e9edcc;
+}
+
+div[theme = 'GREEN'] .square.dark .row-marking, div[theme = 'GREEN'] .square.dark .col-marking{
+    color: #779954;
+}
+
+div[theme = 'GRAY'] .square.light {
+    background-color: #888888;
+}
+
+div[theme = 'GRAY'] .square.light .row-marking, div[theme = 'GRAY'] .square.light .col-marking{
+    color: #dddddd;
+}
+
+div[theme = 'GRAY'] .square.dark {
+    
+    background-color: #dddddd;
+}
+
+div[theme = 'GRAY'] .square.dark .row-marking, div[theme = 'GRAY'] .square.dark .col-marking{
+    color: #888888;
+}
+
+div[theme = 'WOOD'] .square.light {
+    background-color: #c5934e;
+}
+
+div[theme = 'WOOD'] .square.light .row-marking, div[theme = 'WOOD'] .square.light .col-marking{
+    color: #eee3bc;
+}
+
+div[theme = 'WOOD'] .square.dark {
+    background-color: #eee3bc;
+}
+
+div[theme = 'WOOD'] .square.dark .row-marking, div[theme = 'WOOD'] .square.dark .col-marking{
+    color: #c5934e;
+}
+
+.square .row-marking {
+    position: absolute;
+    top: 0.8rem;
+    left: 0.8rem;
+    font-size: 2rem;
+}
+
+.square .row-marking.flipped {
+    transform: rotate(180deg);
+    bottom: 0.8rem;
+    right: 0.8rem;
+}
+
+.square .col-marking {
+    position: absolute;
+    bottom: 0.8rem;
+    right: 0.8rem;
+    font-size: 2rem;
+}
+
+.square .col-marking.flipped {
+    transform: rotate(180deg);
+    top: 0.8rem;
+    left: 0.8rem;
+    bottom: auto;
+    right: auto;
+}
+
+.peice {
+    width: 90%;
+    height: auto;
+}
+
+.peice.flipped {
+    transform: rotate(180deg);
+}
+
+.square:has(> .peice) {
+    cursor: grab;
+}
+
+
