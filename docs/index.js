@@ -1,5 +1,11 @@
-import SQUARES_ID_VS_INDEX_MAP from "../utils/constants.js";
-import SQUARE_MAP from "../utils/constants.js";
+import {
+  isInvalidPawnMove,
+  isInvalidRookMove,
+  isInvalidKnightMove,
+  isInvalidBishopMove,
+  isInvalidQueenMove,
+  isInvalidKingMove,
+} from "../utils/helpers.js";
 
 const BOARD_COLOR_THEMES = {
   GRAY: "GRAY",
@@ -227,12 +233,24 @@ const invalidMove = (targetSquareEl, transferedData) => {
   const sourceSquareId = transferedData.sourceSquareId;
   console.log(peiceType);
   switch (peiceType) {
+    case "bp":
     case "wp":
-      return !new Set([
-        SQUARES_ID_VS_INDEX_MAP[sourceSquareId] - 7,
-        SQUARES_ID_VS_INDEX_MAP[sourceSquareId] - 8,
-        SQUARES_ID_VS_INDEX_MAP[sourceSquareId] - 9,
-      ]).has(SQUARES_ID_VS_INDEX_MAP[targetSquareId]);
+      return isInvalidPawnMove(peiceType, sourceSquareId, targetSquareId);
+    case "br":
+    case "wr":
+      return isInvalidRookMove(peiceType, sourceSquareId, targetSquareId);
+    case "bn":
+    case "wn":
+      return isInvalidKnightMove(peiceType, sourceSquareId, targetSquareId);
+    case "bb":
+    case "wb":
+      return isInvalidBishopMove(peiceType, sourceSquareId, targetSquareId);
+    case "bq":
+    case "wq":
+      return isInvalidQueenMove(peiceType, sourceSquareId, targetSquareId);
+    case "bk":
+    case "wk":
+      return isInvalidKingMove(peiceType, sourceSquareId, targetSquareId);
     default:
       return false;
   }
