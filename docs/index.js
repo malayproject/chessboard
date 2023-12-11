@@ -1,3 +1,4 @@
+import SQUARES_ID_VS_INDEX_MAP from "../utils/constants.js";
 import {
   isInvalidPawnMove,
   isInvalidRookMove,
@@ -5,6 +6,10 @@ import {
   isInvalidBishopMove,
   isInvalidQueenMove,
   isInvalidKingMove,
+  getPossiblePawnTargetIndeces,
+  getPossibleBishopTargetIndeces,
+  getPossibleRookTargetIndeces,
+  getPossibleKnightTargetIndeces,
 } from "../utils/helpers.js";
 
 const BOARD_COLOR_THEMES = {
@@ -21,6 +26,8 @@ const SQUARE_COLOR = {
 const boardEl = document.querySelector(".board");
 const themeSelectorEl = document.querySelector("#boardThemeSelect");
 const squareEls = Array.from(document.querySelectorAll(".square"));
+const player_info_headerEl = document.querySelector("#pih");
+const player_info_footerEl = document.querySelector("#pif");
 
 const checkEvenCell = (id) => {
   const res1 = id.charCodeAt(0) - 96;
@@ -30,11 +37,18 @@ const checkEvenCell = (id) => {
 
 const flipBoard = () => {
   boardEl.classList.toggle("flipped");
+  const playerInfoHeaderChildEl = player_info_headerEl.lastElementChild;
+  const playerInfoFooterChildEl = player_info_footerEl.lastElementChild;
+  player_info_headerEl.removeChild(player_info_headerEl.lastElementChild);
+  player_info_footerEl.removeChild(player_info_footerEl.lastElementChild);
+  player_info_headerEl.appendChild(playerInfoFooterChildEl);
+  player_info_footerEl.appendChild(playerInfoHeaderChildEl);
   squareEls.forEach((squareEl) => {
     squareEl.classList.toggle("flipped");
     squareEl.querySelector(".row-marking")?.classList.toggle("flipped");
     squareEl.querySelector(".col-marking")?.classList.toggle("flipped");
     squareEl.querySelector(".peice")?.classList.toggle("flipped");
+
     if (squareEl.classList.contains("flipped")) {
       if (squareEl.id.at(0) === "h") {
         const markingDiv = squareEl.querySelector(".row-marking");
@@ -70,6 +84,74 @@ const flipBoard = () => {
         markingDiv.style.display = "block";
       }
     }
+  });
+};
+
+const handleSquareClick = (e) => {
+  console.log(e);
+  squareEls.forEach((squareEl) => squareEl.classList.remove("highlighted"));
+  let sourceSquareEl = e.target;
+  while (!sourceSquareEl.classList.contains("square")) {
+    sourceSquareEl = sourceSquareEl.parentNode;
+  }
+
+  if (
+    !sourceSquareEl.lastElementChild ||
+    sourceSquareEl.lastElementChild?.tagName !== "IMG"
+  )
+    return;
+  console.log(e);
+  const sourceSquareId = sourceSquareEl.id;
+  const peiceType = document.querySelector(`#${sourceSquareId}`)
+    .lastElementChild.classList[1];
+  if (isWrongPlayerMove(peiceType)) return;
+  let toBeHighlightedSquares;
+  switch (peiceType) {
+    case "wr":
+    case "br":
+      toBeHighlightedSquares = getPossibleRookTargetIndeces(
+        peiceType,
+        sourceSquareId
+      );
+      break;
+    case "wn":
+    case "bn":
+      toBeHighlightedSquares = getPossibleKnightTargetIndeces(
+        peiceType,
+        sourceSquareId
+      );
+      break;
+    case "wb":
+    case "bb":
+      toBeHighlightedSquares = getPossibleBishopTargetIndeces(
+        peiceType,
+        sourceSquareId
+      );
+      break;
+    case "wq":
+    case "bq":
+      toBeHighlightedSquares = new Set([
+        ...getPossibleBishopTargetIndeces(peiceType, sourceSquareId),
+        ...getPossibleRookTargetIndeces(peiceType, sourceSquareId),
+      ]);
+      break;
+    case "wk":
+    case "bk":
+      toBeHighlightedSquares = getPossibleKingTargetIndeces(
+        peiceType,
+        sourceSquareId
+      );
+      break;
+    default:
+      toBeHighlightedSquares = getPossiblePawnTargetIndeces(
+        peiceType,
+        sourceSquareId
+      );
+  }
+  console.log(toBeHighlightedSquares);
+  squareEls.forEach((squareEl) => {
+    if (toBeHighlightedSquares.has(SQUARES_ID_VS_INDEX_MAP[squareEl.id]))
+      squareEl.classList.add("highlighted");
   });
 };
 
@@ -112,6 +194,10 @@ const boardMarking = () => {
       markingDiv.innerText = squareEl.id.at(0);
       squareEl.appendChild(markingDiv);
     }
+    const legalMoveHighlighterEl = document.createElement("div");
+    legalMoveHighlighterEl.classList.add("legal-move-highlighter");
+    squareEl.appendChild(legalMoveHighlighterEl);
+    squareEl.addEventListener("mousedown", handleSquareClick);
   });
 };
 
@@ -217,6 +303,13 @@ const placePeices = () => {
   });
 };
 
+const isWrongPlayerMove = (peiceClass) => {
+  return (
+    (boardEl.classList.contains("flipped") && peiceClass.at(0) === "w") ||
+    (!boardEl.classList.contains("flipped") && peiceClass.at(0) === "b")
+  );
+};
+
 const ifOwnPeice = (targetSquareEl, transferedData) => {
   if (
     targetSquareEl.querySelector(".peice") &&
@@ -263,7 +356,9 @@ const checkInvalidDrop = (e) => {
   while (!targetSquareEl.classList.contains("square")) {
     targetSquareEl = targetSquareEl.parentNode;
   }
+  console.log(transferedData, "trans");
   return (
+    isWrongPlayerMove(transferedData.imagePeiceClass) ||
     ifOwnPeice(targetSquareEl, transferedData) ||
     invalidMove(targetSquareEl, transferedData)
   );
@@ -281,7 +376,7 @@ const handleDragStart = (e) => {
       imagePeiceClass: e.srcElement.classList[1],
     })
   );
-  //   sourceSquareEl.removeChild(sourceSquareEl.lastChild);
+  // sourceSquareEl.removeChild(sourceSquareEl.lastChild);
 };
 
 const allowDrag = (e) => {
@@ -291,6 +386,7 @@ const allowDrag = (e) => {
 const handleDrop = (e) => {
   e.preventDefault();
   if (checkInvalidDrop(e)) return;
+  squareEls.forEach((squareEl) => squareEl.classList.remove("highlighted"));
   let targetSquareEl = e.target;
   while (!targetSquareEl.classList.contains("square")) {
     targetSquareEl = targetSquareEl.parentNode;
@@ -306,12 +402,18 @@ const handleDrop = (e) => {
   const imgEl = document.createElement("img");
   imgEl.setAttribute("src", transferedData.imageSrc);
   imgEl.classList.add("peice", transferedData.imagePeiceClass);
-  if (e.target.classList.contains("flipped")) imgEl.classList.add("flipped");
+  if (targetSquareEl.classList.contains("flipped"))
+    imgEl.classList.add("flipped");
   const sourceSquareEl = document.querySelector(
     `#${transferedData.sourceSquareId}`
   );
   sourceSquareEl.removeChild(sourceSquareEl.lastChild);
+  if (targetSquareEl.lastChild?.tagName === "IMG") {
+    targetSquareEl.removeChild(targetSquareEl.lastChild);
+  }
+
   targetSquareEl.appendChild(imgEl);
+  setTimeout(flipBoard, 300);
 };
 
 const makeSquaresTargettable = () => {
@@ -328,13 +430,45 @@ const boardSetup = () => {
   placePeices();
   makeSquaresTargettable();
 };
+const setPlayerInfo = async () => {
+  const imageWhiteEl = document.querySelector(".player-avatar-white");
+  const imageBlackEl = document.querySelector(".player-avatar-black");
+  const usernameWhiteEl = document.querySelector(".username-white");
+  const usernameBlackEl = document.querySelector(".username-black");
+  imageWhiteEl.setAttribute(
+    "src",
+    "../resources/images/avatar-white-default.png"
+  );
+  imageBlackEl.setAttribute(
+    "src",
+    "../resources/images/avatar-black-default.png"
+  );
+  // try {
+  //   const resWhite = await fetch("https://i.pravatar.cc/3000");
+  //   const dataWhite = await resWhite.blob();
+  // } catch (err) {
+  //   console.log(err.message);
+  // }
+  try {
+    // const resBlack = await fetch("https://i.pravatar.cc/310");
+    // const dataBlack = await resBlack.blob();
+    const data = await fetch(
+      "https://random-data-api.com/api/v2/users?size=2"
+    ).then((res) => res.json());
+    console.log("random", data);
+    imageWhiteEl.setAttribute("src", data[0].avatar);
+    imageBlackEl.setAttribute("src", data[1].avatar);
+    usernameWhiteEl.innerText = data[0].username;
+    usernameBlackEl.innerText = data[1].username;
+  } catch (err) {
+    console.error(err.message);
+  }
+};
 
 function init() {
+  setPlayerInfo();
   boardSetup();
   themeSelectorEl.addEventListener("change", boardTheme);
-  boardEl.addEventListener("click", () => {
-    flipBoard();
-  });
 }
 
 init();

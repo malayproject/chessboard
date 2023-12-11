@@ -11,6 +11,7 @@ body {
     height: 100vh;
     background-color: rgb(50, 56, 56);
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
 }
@@ -20,7 +21,7 @@ body {
 }
 
 .sidebar.left {
-    width: 40rem;
+    width: 20rem;
     height: 100vh;
     top: 0;
     left: 0;
@@ -70,11 +71,51 @@ body {
     left: -0.4rem;
 }
 
+
+
 .boardColorThemeSetter {
     background-color: aliceblue;
     width: 95%;
     height: 8rem;
     border-radius: 1rem;
+}
+
+.player-info-container {
+    /* background-color: aqua; */
+    width: 80rem;
+    height: 5rem;
+    padding: 0.4rem 0 0.4rem 0;
+}
+
+.player-info {
+    display: flex;
+    flex-direction: row;
+}
+
+.player-avatar-container {
+    margin-right: 0.4rem;
+}
+
+.player-avatar {
+    width: 4.2rem;
+}
+
+.player-tagline {
+    display: flex;
+    flex-direction: column;
+    height: 4rem;
+    justify-content: space-between;
+}
+
+.username {
+    color: white;
+    font-size: 1.4rem;
+    background-color: #c5934e;
+}
+
+.captured-peices {
+    background-color: red;
+    height: 2rem;
 }
 
 .board {
@@ -96,6 +137,87 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.square .legal-move-highlighter {
+    width: 30%;
+    height: 30%;
+    display: none;
+    border-radius: 50%;
+    position: absolute;
+    top: 35%;
+    left: 35%;
+    z-index: 1;
+}
+
+.square:has(> .peice) .legal-move-highlighter {
+    width: 95;
+    height: 95%;
+    top: 2.5%;
+    left: 2.5%;
+}
+
+div[theme = 'GREEN'] .square.light.highlighted .legal-move-highlighter{
+    background-color: #97b974;
+    display: block;
+}
+div[theme = 'GREEN'] .square.light.highlighted:has(> .peice) .legal-move-highlighter{
+    /* background-color: rgb(99, 204, 204) !important; */
+    border: 8px solid #97b974;
+    /* background-color: #97b974; */
+    background-color: transparent;
+    display: block;
+}
+div[theme = 'GREEN'] .square.dark.highlighted .legal-move-highlighter{
+    background-color: #c9cdac;
+    display: block;
+}
+div[theme = 'GREEN'] .square.dark.highlighted:has(> .peice) .legal-move-highlighter{
+    /* background-color: rgb(99, 204, 204) !important; */
+    border: 8px solid #c9cdac;
+    background-color: transparent;
+    display: block;
+}
+div[theme = 'GRAY'] .square.light.highlighted .legal-move-highlighter{
+    /* background-color: rgb(99, 204, 204) !important; */
+    /* border: 16px solid #878787; */
+    background-color: #878787;
+}
+div[theme = 'GRAY'] .square.light.highlighted:has(> .peice) .legal-move-highlighter{
+    /* background-color: rgb(99, 204, 204) !important; */
+    border: 8px solid #878787;
+    background-color: transparent;
+}
+div[theme = 'GRAY'] .square.dark.highlighted .legal-move-highlighter{
+    /* background-color: rgb(99, 204, 204) !important; */
+    /* border: 16px solid #dcdcdc; */
+    background-color: #dcdcdc;
+}
+
+div[theme = 'GRAY'] .square.dark.highlighted:has(> .peice) .legal-move-highlighter{
+    /* background-color: rgb(99, 204, 204) !important; */
+    border: 8px solid #dcdcdc;
+    background-color: transparent;
+}
+div[theme = 'WOOD'] .square.light.highlighted .legal-move-highlighter{
+    /* background-color: rgb(99, 204, 204) !important; */
+    /* border: 16px solid #c4924d; */
+    background-color: #c4924d;
+}
+div[theme = 'WOOD'] .square.light.highlighted:has(> .peice) .legal-move-highlighter{
+    /* background-color: rgb(99, 204, 204) !important; */
+    border: 8px solid #c4924d;
+    background-color: transparent;
+}
+div[theme = 'WOOD'] .square.dark.highlighted .legal-move-highlighter{
+    /* background-color: rgb(99, 204, 204) !important; */
+    /* border: 16px solid #ede2bb; */
+    background-color: #ede2bb;
+}
+div[theme = 'WOOD'] .square.dark.highlighted:has(> .peice) .legal-move-highlighter{
+    /* background-color: rgb(99, 204, 204) !important; */
+    border: 8px solid #ede2bb;
+    background-color: transparent;
 }
 
 div[theme = 'GREEN'] .square.light {
@@ -178,6 +300,7 @@ div[theme = 'WOOD'] .square.dark .row-marking, div[theme = 'WOOD'] .square.dark 
 .peice {
     width: 90%;
     height: auto;
+    z-index: 2;
 }
 
 .peice.flipped {
