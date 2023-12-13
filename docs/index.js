@@ -6,10 +6,11 @@ import {
   isInvalidBishopMove,
   isInvalidQueenMove,
   isInvalidKingMove,
-  getPossiblePawnTargetIndeces,
-  getPossibleBishopTargetIndeces,
-  getPossibleRookTargetIndeces,
-  getPossibleKnightTargetIndeces,
+  getFilteredPossibleRookTargetIndeces,
+  getPossibleKingTargetIndeces,
+  getFilteredPossiblePawnTargetIndeces,
+  getFilteredPossibleKnightTargetIndeces,
+  getFilteredPossibleBishopTargetIndeces,
 } from "../utils/helpers.js";
 
 const BOARD_COLOR_THEMES = {
@@ -109,21 +110,21 @@ const handleSquareClick = (e) => {
   switch (peiceType) {
     case "wr":
     case "br":
-      toBeHighlightedSquares = getPossibleRookTargetIndeces(
+      toBeHighlightedSquares = getFilteredPossibleRookTargetIndeces(
         peiceType,
         sourceSquareId
       );
       break;
     case "wn":
     case "bn":
-      toBeHighlightedSquares = getPossibleKnightTargetIndeces(
+      toBeHighlightedSquares = getFilteredPossibleKnightTargetIndeces(
         peiceType,
         sourceSquareId
       );
       break;
     case "wb":
     case "bb":
-      toBeHighlightedSquares = getPossibleBishopTargetIndeces(
+      toBeHighlightedSquares = getFilteredPossibleBishopTargetIndeces(
         peiceType,
         sourceSquareId
       );
@@ -131,8 +132,8 @@ const handleSquareClick = (e) => {
     case "wq":
     case "bq":
       toBeHighlightedSquares = new Set([
-        ...getPossibleBishopTargetIndeces(peiceType, sourceSquareId),
-        ...getPossibleRookTargetIndeces(peiceType, sourceSquareId),
+        ...getFilteredPossibleBishopTargetIndeces(peiceType, sourceSquareId),
+        ...getFilteredPossibleRookTargetIndeces(peiceType, sourceSquareId),
       ]);
       break;
     case "wk":
@@ -143,7 +144,7 @@ const handleSquareClick = (e) => {
       );
       break;
     default:
-      toBeHighlightedSquares = getPossiblePawnTargetIndeces(
+      toBeHighlightedSquares = getFilteredPossiblePawnTargetIndeces(
         peiceType,
         sourceSquareId
       );
@@ -209,33 +210,33 @@ const placePeices = () => {
       case "h1":
         const wrookImgEl = document.createElement("img");
         wrookImgEl.setAttribute("src", "../resources/images/wr.png");
-        wrookImgEl.classList.add("peice", "wr");
+        wrookImgEl.classList.add("peice", "wr", "white");
         squareEl.appendChild(wrookImgEl);
         break;
       case "b1":
       case "g1":
         const wknightImgEl = document.createElement("img");
         wknightImgEl.setAttribute("src", "../resources/images/wn.png");
-        wknightImgEl.classList.add("peice", "wn");
+        wknightImgEl.classList.add("peice", "wn", "white");
         squareEl.appendChild(wknightImgEl);
         break;
       case "c1":
       case "f1":
         const wbishopImgEl = document.createElement("img");
         wbishopImgEl.setAttribute("src", "../resources/images/wb.png");
-        wbishopImgEl.classList.add("peice", "wb");
+        wbishopImgEl.classList.add("peice", "wb", "white");
         squareEl.appendChild(wbishopImgEl);
         break;
       case "d1":
         const wqueenImgEl = document.createElement("img");
         wqueenImgEl.setAttribute("src", "../resources/images/wq.png");
-        wqueenImgEl.classList.add("peice", "wq");
+        wqueenImgEl.classList.add("peice", "wq", "white");
         squareEl.appendChild(wqueenImgEl);
         break;
       case "e1":
         const wkingImgEl = document.createElement("img");
         wkingImgEl.setAttribute("src", "../resources/images/wk.png");
-        wkingImgEl.classList.add("peice", "wk");
+        wkingImgEl.classList.add("peice", "wk", "white");
         squareEl.appendChild(wkingImgEl);
         break;
       case "a2":
@@ -248,40 +249,40 @@ const placePeices = () => {
       case "h2":
         const wpawnImgEl = document.createElement("img");
         wpawnImgEl.setAttribute("src", "../resources/images/wp.png");
-        wpawnImgEl.classList.add("peice", "wp");
+        wpawnImgEl.classList.add("peice", "wp", "white");
         squareEl.appendChild(wpawnImgEl);
         break;
       case "a8":
       case "h8":
         const brookImgEl = document.createElement("img");
         brookImgEl.setAttribute("src", "../resources/images/br.png");
-        brookImgEl.classList.add("peice", "br");
+        brookImgEl.classList.add("peice", "br", "black");
         squareEl.appendChild(brookImgEl);
         break;
       case "b8":
       case "g8":
         const bknightImgEl = document.createElement("img");
         bknightImgEl.setAttribute("src", "../resources/images/bn.png");
-        bknightImgEl.classList.add("peice", "bn");
+        bknightImgEl.classList.add("peice", "bn", "black");
         squareEl.appendChild(bknightImgEl);
         break;
       case "c8":
       case "f8":
         const bbishopImgEl = document.createElement("img");
         bbishopImgEl.setAttribute("src", "../resources/images/bb.png");
-        bbishopImgEl.classList.add("peice", "bb");
+        bbishopImgEl.classList.add("peice", "bb", "black");
         squareEl.appendChild(bbishopImgEl);
         break;
       case "d8":
         const bqueenImgEl = document.createElement("img");
         bqueenImgEl.setAttribute("src", "../resources/images/bq.png");
-        bqueenImgEl.classList.add("peice", "bq");
+        bqueenImgEl.classList.add("peice", "bq", "black");
         squareEl.appendChild(bqueenImgEl);
         break;
       case "e8":
         const bkingImgEl = document.createElement("img");
         bkingImgEl.setAttribute("src", "../resources/images/bk.png");
-        bkingImgEl.classList.add("peice", "bk");
+        bkingImgEl.classList.add("peice", "bk", "black");
         squareEl.appendChild(bkingImgEl);
         break;
       case "a7":
@@ -294,7 +295,7 @@ const placePeices = () => {
       case "h7":
         const bpawnImgEl = document.createElement("img");
         bpawnImgEl.setAttribute("src", "../resources/images/bp.png");
-        bpawnImgEl.classList.add("peice", "bp");
+        bpawnImgEl.classList.add("peice", "bp", "black");
         squareEl.appendChild(bpawnImgEl);
         break;
       default:
@@ -374,6 +375,7 @@ const handleDragStart = (e) => {
       sourceSquareId: sourceSquareEl.id,
       imageSrc: e.srcElement.src,
       imagePeiceClass: e.srcElement.classList[1],
+      imageColorClass: e.srcElement.classList[2],
     })
   );
   // sourceSquareEl.removeChild(sourceSquareEl.lastChild);
@@ -401,7 +403,11 @@ const handleDrop = (e) => {
   );
   const imgEl = document.createElement("img");
   imgEl.setAttribute("src", transferedData.imageSrc);
-  imgEl.classList.add("peice", transferedData.imagePeiceClass);
+  imgEl.classList.add(
+    "peice",
+    transferedData.imagePeiceClass,
+    transferedData.imageColorClass
+  );
   if (targetSquareEl.classList.contains("flipped"))
     imgEl.classList.add("flipped");
   const sourceSquareEl = document.querySelector(
