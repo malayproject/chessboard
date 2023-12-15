@@ -693,7 +693,7 @@ export const getFilteredPossibleKingTargetIndeces = (
   sourceSquareId
 ) => {
   const ownKingInCheckMap = getOwnKingInCheckMap(peiceType, sourceSquareId);
-
+  console.log("testing");
   const allPossibleKingTargetIndeces = getAllPossibleKingTargetIndeces(
     peiceType,
     sourceSquareId
