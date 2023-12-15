@@ -7,10 +7,10 @@ import {
   isInvalidQueenMove,
   isInvalidKingMove,
   getFilteredPossibleRookTargetIndeces,
-  getPossibleKingTargetIndeces,
   getFilteredPossiblePawnTargetIndeces,
   getFilteredPossibleKnightTargetIndeces,
   getFilteredPossibleBishopTargetIndeces,
+  getFilteredPossibleKingTargetIndeces,
 } from "../utils/helpers.js";
 
 const BOARD_COLOR_THEMES = {
@@ -138,7 +138,7 @@ const handleSquareClick = (e) => {
       break;
     case "wk":
     case "bk":
-      toBeHighlightedSquares = getPossibleKingTargetIndeces(
+      toBeHighlightedSquares = getFilteredPossibleKingTargetIndeces(
         peiceType,
         sourceSquareId
       );
