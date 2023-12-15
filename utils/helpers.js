@@ -844,3 +844,86 @@ export const isInvalidKingMove = (
     targetSquareIndex
   );
 };
+
+export const getIsOpponentKingCheckMated = (opponentColor) => {
+  const opponentPeicesEl = document.querySelectorAll(
+    `img.peice.${opponentColor}`
+  );
+  console.log(opponentPeicesEl, "opponentPeicesEl");
+  const movable = Array.from(opponentPeicesEl).map((opponentPeiceEl) => {
+    // const opponentElIndex =
+    //   SQUARES_ID_VS_INDEX_MAP[opponentPeiceEl.parentNode.id];
+    const opponentPeiceType = opponentPeiceEl.classList[1];
+    switch (opponentPeiceType) {
+      case "wp":
+      case "bp":
+        if (
+          getFilteredPossiblePawnTargetIndeces(
+            opponentPeiceType,
+            opponentPeiceEl.parentNode.id
+          ).size
+        )
+          return false;
+        break;
+      case "wr":
+      case "br":
+        if (
+          getFilteredPossibleRookTargetIndeces(
+            opponentPeiceType,
+            opponentPeiceEl.parentNode.id
+          ).size
+        )
+          return false;
+        break;
+      case "wn":
+      case "bn":
+        if (
+          getFilteredPossibleKnightTargetIndeces(
+            opponentPeiceType,
+            opponentPeiceEl.parentNode.id
+          ).size
+        )
+          return false;
+        break;
+      case "wb":
+      case "bb":
+        if (
+          getFilteredPossibleBishopTargetIndeces(
+            opponentPeiceType,
+            opponentPeiceEl.parentNode.id
+          ).size
+        )
+          return false;
+        break;
+      case "wq":
+      case "bq":
+        if (
+          getFilteredPossibleBishopTargetIndeces(
+            opponentPeiceType,
+            opponentPeiceEl.parentNode.id
+          ).size ||
+          getFilteredPossibleRookTargetIndeces(
+            opponentPeiceType,
+            opponentPeiceEl.parentNode.id
+          ).size
+        )
+          return false;
+        break;
+      default:
+        if (
+          getFilteredPossibleKingTargetIndeces(
+            opponentPeiceType,
+            opponentPeiceEl.parentNode.id
+          ).size
+        )
+          return false;
+    }
+    return true;
+  });
+  // console.log(movable, "rest");
+  // console.log(
+  //   movable.every((item) => item),
+  //   "rest"
+  // );
+  return movable.every((item) => item);
+};

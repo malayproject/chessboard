@@ -11,6 +11,7 @@ import {
   getFilteredPossibleKnightTargetIndeces,
   getFilteredPossibleBishopTargetIndeces,
   getFilteredPossibleKingTargetIndeces,
+  getIsOpponentKingCheckMated,
 } from "../utils/helpers.js";
 
 const BOARD_COLOR_THEMES = {
@@ -419,7 +420,10 @@ const handleDrop = (e) => {
   }
 
   targetSquareEl.appendChild(imgEl);
-  // const isOpponentKingInCheck = getIsOpponentInCheck()
+  const ownColor = imgEl.classList.contains("white") ? "white" : "black";
+  const opponentColor = imgEl.classList.contains("white") ? "black" : "white";
+  const isOpponentKingInCheck = getIsOpponentKingCheckMated(opponentColor);
+  if (isOpponentKingInCheck) setTimeout(() => alert(`${ownColor} wins`), 200);
   setTimeout(flipBoard, 300);
 };
 
