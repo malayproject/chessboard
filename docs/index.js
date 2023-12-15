@@ -419,6 +419,7 @@ const handleDrop = (e) => {
   }
 
   targetSquareEl.appendChild(imgEl);
+  // const isOpponentKingInCheck = getIsOpponentInCheck()
   setTimeout(flipBoard, 300);
 };
 

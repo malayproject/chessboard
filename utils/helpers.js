@@ -693,17 +693,144 @@ export const getFilteredPossibleKingTargetIndeces = (
   sourceSquareId
 ) => {
   const ownKingInCheckMap = getOwnKingInCheckMap(peiceType, sourceSquareId);
+  // const isOwnKingInCheck = !!ownKingInCheckMap.size;
   const allPossibleKingTargetIndeces = getAllPossibleKingTargetIndeces(
     peiceType,
     sourceSquareId
   );
-  const filteredPossibleKingTargetIndeces = allPossibleKingTargetIndeces;
+  const filteredPossibleKingTargetIndeces = new Set(
+    Array.from(allPossibleKingTargetIndeces)
+  );
+
+  let allOpponentAttackedIndeces = new Set();
+  const sourceSquareEl = document.querySelector(`#${sourceSquareId}`);
+  // let currentKingSquareEl = sourceSquareEl;
+  const ownKingPeiceImgEl = document.querySelector(`.${peiceType}`);
+
+  // console.log(ownKingPeice, "ownKingPeice");
   allPossibleKingTargetIndeces.forEach((index) => {
-    Array.from(ownKingInCheckMap.values()).forEach((attackingPath) => {
-      if (attackingPath.includes(index))
+    // currentKingSquareEl.removeChild(ownKingPeiceImgEl);
+    const currentKingSquareEl = document.querySelector(
+      `#${SQUARES_INDEX_VS_ID_MAP[index]}`
+    );
+    const possibleTargetSquareImgEl = document.querySelector(
+      `#${currentKingSquareEl.id} > img`
+    );
+    if (possibleTargetSquareImgEl) {
+      currentKingSquareEl.replaceChild(
+        ownKingPeiceImgEl,
+        possibleTargetSquareImgEl
+      );
+    } else {
+      currentKingSquareEl.appendChild(ownKingPeiceImgEl);
+    }
+
+    const opponentColor = peiceType.at(0) === "b" ? "white" : "black";
+    const opponentPeiceEls = Array.from(
+      document.querySelectorAll(`.square > img.${opponentColor}`)
+    );
+
+    // currentKingSquareEl.appendChild(possibleTargetSquareImgEl);
+    opponentPeiceEls.forEach((opponentPeice) => {
+      const opponentPeiceType = opponentPeice.classList[1];
+      let attackedIndeces;
+      switch (opponentPeiceType) {
+        case "wp":
+        case "bp":
+          attackedIndeces = getAllPossiblePawnTargetIndeces(
+            opponentPeiceType,
+            opponentPeice.parentNode.id
+          );
+          allOpponentAttackedIndeces = new Set([
+            ...allOpponentAttackedIndeces,
+            ...attackedIndeces,
+          ]);
+          break;
+        case "wr":
+        case "br":
+          attackedIndeces = getAllPossibleRookTargetIndeces(
+            opponentPeiceType,
+            opponentPeice.parentNode.id
+          );
+          allOpponentAttackedIndeces = new Set([
+            ...allOpponentAttackedIndeces,
+            ...attackedIndeces,
+          ]);
+          break;
+        case "wn":
+        case "bn":
+          attackedIndeces = getAllPossibleKnightTargetIndeces(
+            opponentPeiceType,
+            opponentPeice.parentNode.id
+          );
+          allOpponentAttackedIndeces = new Set([
+            ...allOpponentAttackedIndeces,
+            ...attackedIndeces,
+          ]);
+          break;
+        case "wb":
+        case "bb":
+          attackedIndeces = getAllPossibleBishopTargetIndeces(
+            opponentPeiceType,
+            opponentPeice.parentNode.id
+          );
+          allOpponentAttackedIndeces = new Set([
+            ...allOpponentAttackedIndeces,
+            ...attackedIndeces,
+          ]);
+          break;
+        case "wq":
+        case "bq":
+          attackedIndeces = new Set([
+            ...getAllPossibleBishopTargetIndeces(
+              opponentPeiceType,
+              opponentPeice.parentNode.id
+            ),
+            ...getAllPossibleRookTargetIndeces(
+              opponentPeiceType,
+              opponentPeice.parentNode.id
+            ),
+          ]);
+          allOpponentAttackedIndeces = new Set([
+            ...allOpponentAttackedIndeces,
+            ...attackedIndeces,
+          ]);
+          break;
+        case "wk":
+        case "bk":
+          attackedIndeces = getAllPossibleKingTargetIndeces(
+            opponentPeiceType,
+            opponentPeice.parentNode.id
+          );
+          allOpponentAttackedIndeces = new Set([
+            ...allOpponentAttackedIndeces,
+            ...attackedIndeces,
+          ]);
+          break;
+      }
+      if (allOpponentAttackedIndeces.has(index))
         filteredPossibleKingTargetIndeces.delete(index);
     });
+    // currentKingSquareEl.replaceChild(
+    //   possibleTargetSquareImgEl,
+    //   ownKingPeiceImgEl
+    // );
+    if (possibleTargetSquareImgEl) {
+      currentKingSquareEl.replaceChild(
+        possibleTargetSquareImgEl,
+        ownKingPeiceImgEl
+      );
+    } else {
+      currentKingSquareEl.removeChild(ownKingPeiceImgEl);
+    }
   });
+  sourceSquareEl.appendChild(ownKingPeiceImgEl);
+  // allPossibleKingTargetIndeces.forEach((index) => {
+  //   Array.from(ownKingInCheckMap.values()).forEach((attackingPath) => {
+  //     if (attackingPath.includes(index))
+  //       filteredPossibleKingTargetIndeces.delete(index);
+  //   });
+  // });
   return filteredPossibleKingTargetIndeces;
 };
 
@@ -713,7 +840,7 @@ export const isInvalidKingMove = (
   targetSquareId
 ) => {
   const targetSquareIndex = SQUARES_ID_VS_INDEX_MAP[targetSquareId];
-  return !getPossibleKingTargetIndeces(peiceType, sourceSquareId).has(
+  return !getFilteredPossibleKingTargetIndeces(peiceType, sourceSquareId).has(
     targetSquareIndex
   );
 };
