@@ -225,16 +225,19 @@ export const getOwnKingInCheckMap = (peiceType, sourceSquareId) => {
 };
 
 export const getAllPossiblePawnTargetIndeces = (peiceType, sourceSquareId) => {
+  const allPossiblePawnMoveIndeces = new Set();
+  const allPossiblePawnAttackIndeces = new Set();
   const allPossiblePawnTargetIndeces = new Set();
   const sourceSquareIndex = SQUARES_ID_VS_INDEX_MAP[sourceSquareId];
-  if (sourceSquareIndex > 55) return allPossiblePawnTargetIndeces;
-  const whitePeiceCheck = peiceType === "wp";
-  const thirdRowCheck = sourceSquareIndex >= 48 && sourceSquareIndex <= 55;
-  const sixthRowCheck = sourceSquareIndex >= 8 && sourceSquareIndex <= 15;
 
+  const whitePeiceCheck = peiceType === "wp";
+  if (whitePeiceCheck ? sourceSquareIndex < 8 : sourceSquareIndex > 55)
+    return allPossiblePawnTargetIndeces;
+  const secondRowCheck = sourceSquareIndex >= 8 && sourceSquareIndex <= 15;
+  const seventhRowCheck = sourceSquareIndex >= 48 && sourceSquareIndex <= 55;
   let checkObstacleRes;
   let index;
-  if (whitePeiceCheck ? thirdRowCheck : sixthRowCheck) {
+  if (whitePeiceCheck ? seventhRowCheck : secondRowCheck) {
     for (let i = 1; i < 3; i++) {
       index = whitePeiceCheck
         ? sourceSquareIndex - i * 8
@@ -253,16 +256,23 @@ export const getAllPossiblePawnTargetIndeces = (peiceType, sourceSquareId) => {
     }
   }
   index = whitePeiceCheck ? sourceSquareIndex - 9 : sourceSquareIndex + 9;
-  checkObstacleRes = checkObstacle(peiceType, index);
+  const leftAttackNotPossible = whitePeiceCheck
+    ? sourceSquareIndex % 8 === 0
+    : sourceSquareIndex % 8 === 7;
+  checkObstacleRes = leftAttackNotPossible
+    ? [true, true]
+    : checkObstacle(peiceType, index);
   if (checkObstacleRes[0] && !checkObstacleRes[1])
     allPossiblePawnTargetIndeces.add(index);
   index = whitePeiceCheck ? sourceSquareIndex - 7 : sourceSquareIndex + 7;
-  checkObstacleRes = checkObstacle(peiceType, index);
+  const rightAttackNotPossible = whitePeiceCheck
+    ? sourceSquareIndex % 8 === 7
+    : sourceSquareIndex % 8 === 0;
+  checkObstacleRes = rightAttackNotPossible
+    ? [true, true]
+    : checkObstacle(peiceType, index);
   if (checkObstacleRes[0] && !checkObstacleRes[1])
     allPossiblePawnTargetIndeces.add(index);
-  Array.from(allPossiblePawnTargetIndeces).forEach((index) =>
-    console.log("pawn indeces", SQUARES_INDEX_VS_ID_MAP[index])
-  );
   return allPossiblePawnTargetIndeces;
 };
 
@@ -925,5 +935,5 @@ export const getIsOpponentKingCheckMated = (opponentColor) => {
   //   movable.every((item) => item),
   //   "rest"
   // );
-  return movable.every((item) => item);
+  return !movable.includes(false);
 };
