@@ -28,8 +28,9 @@ const SQUARE_COLOR = {
 const boardEl = document.querySelector(".board");
 const themeSelectorEl = document.querySelector("#boardThemeSelect");
 const squareEls = Array.from(document.querySelectorAll(".square"));
-const player_info_headerEl = document.querySelector("#pih");
-const player_info_footerEl = document.querySelector("#pif");
+// const player_info_headerEl = document.querySelector("#pih");
+// const player_info_footerEl = document.querySelector("#pif");
+const clickedPeiceInfo = { data: null };
 
 const checkEvenCell = (id) => {
   const res1 = id.charCodeAt(0) - 96;
@@ -39,12 +40,12 @@ const checkEvenCell = (id) => {
 
 const flipBoard = () => {
   boardEl.classList.toggle("flipped");
-  const playerInfoHeaderChildEl = player_info_headerEl.lastElementChild;
-  const playerInfoFooterChildEl = player_info_footerEl.lastElementChild;
-  player_info_headerEl.removeChild(player_info_headerEl.lastElementChild);
-  player_info_footerEl.removeChild(player_info_footerEl.lastElementChild);
-  player_info_headerEl.appendChild(playerInfoFooterChildEl);
-  player_info_footerEl.appendChild(playerInfoHeaderChildEl);
+  // const playerInfoHeaderChildEl = player_info_headerEl.lastElementChild;
+  // const playerInfoFooterChildEl = player_info_footerEl.lastElementChild;
+  // player_info_headerEl.removeChild(player_info_headerEl.lastElementChild);
+  // player_info_footerEl.removeChild(player_info_footerEl.lastElementChild);
+  // player_info_headerEl.appendChild(playerInfoFooterChildEl);
+  // player_info_footerEl.appendChild(playerInfoHeaderChildEl);
   squareEls.forEach((squareEl) => {
     squareEl.classList.toggle("flipped");
     squareEl.querySelector(".row-marking")?.classList.toggle("flipped");
@@ -90,11 +91,54 @@ const flipBoard = () => {
 };
 
 const handleSquareClick = (e) => {
-  console.log(e);
+  // console.log(e);
   squareEls.forEach((squareEl) => squareEl.classList.remove("highlighted"));
+
   let sourceSquareEl = e.target;
   while (!sourceSquareEl.classList.contains("square")) {
     sourceSquareEl = sourceSquareEl.parentNode;
+  }
+  if (clickedPeiceInfo.data) {
+    if (checkInvalidDrop(clickedPeiceInfo.data, e)) {
+      clickedPeiceInfo.data = null;
+    } else {
+      const transferedData = JSON.parse(clickedPeiceInfo.data);
+      const newImgPeiceEl = document.createElement("img");
+      newImgPeiceEl.setAttribute("src", transferedData.imageSrc);
+      newImgPeiceEl.classList.add(
+        "peice",
+        transferedData.imagePeiceClass,
+        transferedData.imageColorClass
+      );
+      if (sourceSquareEl.classList.contains("flipped"))
+        newImgPeiceEl.classList.add("flipped");
+      const originSquareEl = document.querySelector(
+        `#${transferedData.sourceSquareId}`
+      );
+      originSquareEl.removeChild(originSquareEl.lastChild);
+      if (sourceSquareEl.lastChild?.tagName === "IMG") {
+        sourceSquareEl.removeChild(sourceSquareEl.lastChild);
+      }
+      sourceSquareEl.appendChild(newImgPeiceEl);
+      clickedPeiceInfo.data = null;
+
+      const ownColor = newImgPeiceEl.classList.contains("white")
+        ? "white"
+        : "black";
+      const opponentColor = newImgPeiceEl.classList.contains("white")
+        ? "black"
+        : "white";
+      const opponentKingInMateRes = getIsOpponentKingCheckMated(opponentColor);
+      const isOpponentKingCheckMated =
+        opponentKingInMateRes[0] && opponentKingInMateRes[1];
+      const isOpponentKingStaleMated =
+        !opponentKingInMateRes[0] && opponentKingInMateRes[1];
+      if (isOpponentKingCheckMated)
+        setTimeout(() => alert(`${ownColor} wins`), 200);
+      if (isOpponentKingStaleMated) setTimeout(() => alert("Match Draw"), 200);
+      setTimeout(flipBoard, 300);
+      return;
+    }
   }
 
   if (
@@ -102,11 +146,25 @@ const handleSquareClick = (e) => {
     sourceSquareEl.lastElementChild?.tagName !== "IMG"
   )
     return;
-  console.log(e);
+
+  // console.log(e);
   const sourceSquareId = sourceSquareEl.id;
-  const peiceType = document.querySelector(`#${sourceSquareId}`)
-    .lastElementChild.classList[1];
+  const imgPeiceEl = document.querySelector(
+    `#${sourceSquareId}`
+  ).lastElementChild;
+  const peiceType = imgPeiceEl.classList[1];
   if (isWrongPlayerMove(peiceType)) return;
+  // console.log(clickedPeiceInfo.data, "data");
+  if (!clickedPeiceInfo.data) {
+    // clickedPeiceInfo.data = {};
+    clickedPeiceInfo.data = JSON.stringify({
+      sourceSquareId: sourceSquareId,
+      imageSrc: imgPeiceEl.src,
+      imagePeiceClass: imgPeiceEl.classList[1],
+      imageColorClass: imgPeiceEl.classList[2],
+    });
+  }
+  // console.log(clickedPeiceInfo.data, "data");
   let toBeHighlightedSquares;
   switch (peiceType) {
     case "wr":
@@ -150,7 +208,7 @@ const handleSquareClick = (e) => {
         sourceSquareId
       );
   }
-  console.log(toBeHighlightedSquares);
+  // console.log(toBeHighlightedSquares);
   squareEls.forEach((squareEl) => {
     if (toBeHighlightedSquares.has(SQUARES_ID_VS_INDEX_MAP[squareEl.id]))
       squareEl.classList.add("highlighted");
@@ -326,7 +384,7 @@ const invalidMove = (targetSquareEl, transferedData) => {
   const peiceType = transferedData.imagePeiceClass;
   const targetSquareId = targetSquareEl.id;
   const sourceSquareId = transferedData.sourceSquareId;
-  console.log(peiceType);
+  // console.log(peiceType);
   switch (peiceType) {
     case "bp":
     case "wp":
@@ -352,13 +410,15 @@ const invalidMove = (targetSquareEl, transferedData) => {
   return false;
 };
 
-const checkInvalidDrop = (e) => {
-  let targetSquareEl = e.target;
-  const transferedData = JSON.parse(e.dataTransfer.getData("application/json"));
+const checkInvalidDrop = (eventOrData, clickDropEvent) => {
+  let targetSquareEl = eventOrData.target || clickDropEvent.target;
+  const transferedData = JSON.parse(
+    eventOrData.dataTransfer?.getData("application/json") || eventOrData
+  );
   while (!targetSquareEl.classList.contains("square")) {
     targetSquareEl = targetSquareEl.parentNode;
   }
-  console.log(transferedData, "trans");
+  // console.log(transferedData, "trans");
   return (
     isWrongPlayerMove(transferedData.imagePeiceClass) ||
     ifOwnPeice(targetSquareEl, transferedData) ||
@@ -367,9 +427,9 @@ const checkInvalidDrop = (e) => {
 };
 
 const handleDragStart = (e) => {
-  console.log("drag start", e);
+  // console.log("drag start", e);
   const sourceSquareEl = e.srcElement.parentNode;
-
+  clickedPeiceInfo.data = null;
   e.dataTransfer.setData(
     "application/json",
     JSON.stringify({
@@ -394,14 +454,14 @@ const handleDrop = (e) => {
   while (!targetSquareEl.classList.contains("square")) {
     targetSquareEl = targetSquareEl.parentNode;
   }
-  console.log(e.target.tagName);
-  console.log(e.target.querySelector(".peice"));
+  // console.log(e.target.tagName);
+  // console.log(e.target.querySelector(".peice"));
   const transferedData = JSON.parse(e.dataTransfer.getData("application/json"));
-  console.log("drop event", e.target.id);
-  console.log(
-    "drop event",
-    JSON.parse(e.dataTransfer.getData("application/json"))
-  );
+  // console.log("drop event", e.target.id);
+  // console.log(
+  // "drop event",
+  // JSON.parse(e.dataTransfer.getData("application/json"))
+  // );
   const imgEl = document.createElement("img");
   imgEl.setAttribute("src", transferedData.imageSrc);
   imgEl.classList.add(
@@ -422,8 +482,14 @@ const handleDrop = (e) => {
   targetSquareEl.appendChild(imgEl);
   const ownColor = imgEl.classList.contains("white") ? "white" : "black";
   const opponentColor = imgEl.classList.contains("white") ? "black" : "white";
-  const isOpponentKingInCheck = getIsOpponentKingCheckMated(opponentColor);
-  if (isOpponentKingInCheck) setTimeout(() => alert(`${ownColor} wins`), 200);
+  const opponentKingInMateRes = getIsOpponentKingCheckMated(opponentColor);
+  const isOpponentKingCheckMated =
+    opponentKingInMateRes[0] && opponentKingInMateRes[1];
+  const isOpponentKingStaleMated =
+    !opponentKingInMateRes[0] && opponentKingInMateRes[1];
+  if (isOpponentKingCheckMated)
+    setTimeout(() => alert(`${ownColor} wins`), 200);
+  if (isOpponentKingStaleMated) setTimeout(() => alert("Match Draw"), 200);
   setTimeout(flipBoard, 300);
 };
 
@@ -466,7 +532,7 @@ const setPlayerInfo = async () => {
     const data = await fetch(
       "https://random-data-api.com/api/v2/users?size=2"
     ).then((res) => res.json());
-    console.log("random", data);
+    // console.log("random", data);
     imageWhiteEl.setAttribute("src", data[0].avatar);
     imageBlackEl.setAttribute("src", data[1].avatar);
     usernameWhiteEl.innerText = data[0].username;
@@ -477,7 +543,7 @@ const setPlayerInfo = async () => {
 };
 
 function init() {
-  setPlayerInfo();
+  // setPlayerInfo();
   boardSetup();
   themeSelectorEl.addEventListener("change", boardTheme);
 }

@@ -6,7 +6,7 @@ const checkObstacle = (peiceType, index) => {
   const squareChildEl = document.querySelector(
     `#${SQUARES_INDEX_VS_ID_MAP[index]}`
   ).lastElementChild;
-  console.log("checkObstacle1", peiceType, squareChildEl?.classList[1]);
+  // console.log("checkObstacle1", peiceType, squareChildEl?.classList[1]);
   return [
     squareChildEl?.tagName === "IMG",
     squareChildEl?.classList[1]?.at(0) === peiceType.at(0),
@@ -53,7 +53,7 @@ const getAttackingPath = (
 };
 
 export const getOwnKingInCheckMap = (peiceType, sourceSquareId) => {
-  console.log("getOwnKingInCheckMap called", peiceType, sourceSquareId);
+  // console.log("getOwnKingInCheckMap called", peiceType, sourceSquareId);
   const sourceSquareIndex =
     peiceType.at(1) !== "k" ? SQUARES_ID_VS_INDEX_MAP[sourceSquareId] : null;
   const opponentColor = peiceType.at(0) === "b" ? "white" : "black";
@@ -75,7 +75,7 @@ export const getOwnKingInCheckMap = (peiceType, sourceSquareId) => {
           getAllPossiblePawnTargetIndeces(
             opponentPeiceEl.classList[1],
             opponentPeiceEl.parentNode.id
-          )
+          )[1]
         );
         isOpponentPeiceAttackingOwnKing = arrPawn.some(
           (index) => index === ownKingSquareIndex
@@ -227,12 +227,11 @@ export const getOwnKingInCheckMap = (peiceType, sourceSquareId) => {
 export const getAllPossiblePawnTargetIndeces = (peiceType, sourceSquareId) => {
   const allPossiblePawnMoveIndeces = new Set();
   const allPossiblePawnAttackIndeces = new Set();
-  const allPossiblePawnTargetIndeces = new Set();
   const sourceSquareIndex = SQUARES_ID_VS_INDEX_MAP[sourceSquareId];
 
   const whitePeiceCheck = peiceType === "wp";
   if (whitePeiceCheck ? sourceSquareIndex < 8 : sourceSquareIndex > 55)
-    return allPossiblePawnTargetIndeces;
+    return [allPossiblePawnMoveIndeces, allPossiblePawnAttackIndeces];
   const secondRowCheck = sourceSquareIndex >= 8 && sourceSquareIndex <= 15;
   const seventhRowCheck = sourceSquareIndex >= 48 && sourceSquareIndex <= 55;
   let checkObstacleRes;
@@ -244,7 +243,7 @@ export const getAllPossiblePawnTargetIndeces = (peiceType, sourceSquareId) => {
         : sourceSquareIndex + i * 8;
       checkObstacleRes = checkObstacle(peiceType, index);
       if (!checkObstacleRes[0]) {
-        allPossiblePawnTargetIndeces.add(index);
+        allPossiblePawnMoveIndeces.add(index);
       } else break;
     }
   } else {
@@ -252,7 +251,7 @@ export const getAllPossiblePawnTargetIndeces = (peiceType, sourceSquareId) => {
 
     checkObstacleRes = checkObstacle(peiceType, index);
     if (!checkObstacleRes[0]) {
-      allPossiblePawnTargetIndeces.add(index);
+      allPossiblePawnMoveIndeces.add(index);
     }
   }
   index = whitePeiceCheck ? sourceSquareIndex - 9 : sourceSquareIndex + 9;
@@ -263,7 +262,7 @@ export const getAllPossiblePawnTargetIndeces = (peiceType, sourceSquareId) => {
     ? [true, true]
     : checkObstacle(peiceType, index);
   if (checkObstacleRes[0] && !checkObstacleRes[1])
-    allPossiblePawnTargetIndeces.add(index);
+    allPossiblePawnAttackIndeces.add(index);
   index = whitePeiceCheck ? sourceSquareIndex - 7 : sourceSquareIndex + 7;
   const rightAttackNotPossible = whitePeiceCheck
     ? sourceSquareIndex % 8 === 7
@@ -272,8 +271,8 @@ export const getAllPossiblePawnTargetIndeces = (peiceType, sourceSquareId) => {
     ? [true, true]
     : checkObstacle(peiceType, index);
   if (checkObstacleRes[0] && !checkObstacleRes[1])
-    allPossiblePawnTargetIndeces.add(index);
-  return allPossiblePawnTargetIndeces;
+    allPossiblePawnAttackIndeces.add(index);
+  return [allPossiblePawnMoveIndeces, allPossiblePawnAttackIndeces];
 };
 
 export const getFilteredPossiblePawnTargetIndeces = (
@@ -282,12 +281,16 @@ export const getFilteredPossiblePawnTargetIndeces = (
 ) => {
   const ownKingInCheckMap = getOwnKingInCheckMap(peiceType, sourceSquareId);
   if (ownKingInCheckMap.size > 1) return new Set();
-  const allPossiblePawnTargetIndeces = getAllPossiblePawnTargetIndeces(
+  const allPossiblePawnTargetIndecesRes = getAllPossiblePawnTargetIndeces(
     peiceType,
     sourceSquareId
   );
+  const allPossiblePawnTargetIndeces = new Set([
+    ...allPossiblePawnTargetIndecesRes[0],
+    ...allPossiblePawnTargetIndecesRes[1],
+  ]);
   if (ownKingInCheckMap.size > 0) {
-    console.log(Array.from(ownKingInCheckMap.values())[0]);
+    // console.log(Array.from(ownKingInCheckMap.values())[0]);
     const attackSquareIndeces = new Set(
       Array.from(ownKingInCheckMap.values())[0]
     );
@@ -316,13 +319,10 @@ export const getAllPossibleBishopTargetIndeces = (
   sourceSquareId,
   squareIndexToIgnore
 ) => {
-  // const ownKingInCheckMap = getOwnKingInCheckMap(peiceType, sourceSquareId);
   const allPossibleBishopTargetIndeces = new Set();
-  // if (ownKingInCheckMap.size > 1) return allPossibleBishopTargetIndeces;
   const sourceSquareIndex = SQUARES_ID_VS_INDEX_MAP[sourceSquareId];
 
   let index = sourceSquareIndex;
-  // while (index > 7 && sourceSquareId.at(0) !== "a") {
   while (index > 7 && index % 8 > 0) {
     index -= 9;
     const checkObstacleRes = checkObstacle(peiceType, index);
@@ -401,11 +401,7 @@ export const getFilteredPossibleBishopTargetIndeces = (
     sourceSquareId
   );
   if (ownKingInCheckMap.size > 0) {
-    // const noMovePossible = Array.from(ownKingInCheckMap.values()).some(
-    //   (attackingPath) =>
-    //     new Set(attackingPath).has(SQUARES_ID_VS_INDEX_MAP[sourceSquareId])
-    // );
-    console.log(Array.from(ownKingInCheckMap.values())[0]);
+    // console.log(Array.from(ownKingInCheckMap.values())[0]);
     const attackSquareIndeces = new Set(
       Array.from(ownKingInCheckMap.values())[0]
     );
@@ -424,9 +420,6 @@ export const isInvalidBishopMove = (
   targetSquareId
 ) => {
   const targetSquareIndex = SQUARES_ID_VS_INDEX_MAP[targetSquareId];
-  // return !getPossibleBishopTargetIndeces(peiceType, sourceSquareId).has(
-  //   targetSquareIndex
-  // );
   return !getFilteredPossibleBishopTargetIndeces(peiceType, sourceSquareId).has(
     targetSquareIndex
   );
@@ -436,9 +429,7 @@ export const getAllPossibleKnightTargetIndeces = (
   peiceType,
   sourceSquareId
 ) => {
-  // const ownKingInCheckMap = getOwnKingInCheckMap(peiceType, sourceSquareId);
   const allPossibleKnightTargetIndeces = new Set();
-  // if (ownKingInCheckMap.size > 1) return allPossibleKnightTargetIndeces;
   const sourceSquareIndex = SQUARES_ID_VS_INDEX_MAP[sourceSquareId];
   if (sourceSquareIndex > 15 && sourceSquareIndex % 8 < 7) {
     const checkObstacleRes = checkObstacle(peiceType, sourceSquareIndex - 15);
@@ -494,7 +485,7 @@ export const getFilteredPossibleKnightTargetIndeces = (
     sourceSquareId
   );
   if (ownKingInCheckMap.size > 0) {
-    console.log(Array.from(ownKingInCheckMap.values())[0]);
+    // console.log(Array.from(ownKingInCheckMap.values())[0]);
     const attackSquareIndeces = new Set(
       Array.from(ownKingInCheckMap.values())[0]
     );
@@ -513,9 +504,6 @@ export const isInvalidKnightMove = (
   targetSquareId
 ) => {
   const targetSquareIndex = SQUARES_ID_VS_INDEX_MAP[targetSquareId];
-  // return !getPossibleKnightTargetIndeces(peiceType, sourceSquareId).has(
-  //   targetSquareIndex
-  // );
   return !getFilteredPossibleKnightTargetIndeces(peiceType, sourceSquareId).has(
     targetSquareIndex
   );
@@ -526,9 +514,7 @@ export const getAllPossibleRookTargetIndeces = (
   sourceSquareId,
   squareIndexToIgnore
 ) => {
-  // const ownKingInCheckMap = getOwnKingInCheckMap(peiceType, sourceSquareId);
   const allPossibleRookTargetIndeces = new Set();
-  // if (ownKingInCheckMap.size > 1) return allPossibleRookTargetIndeces;
   const sourceSquareIndex = SQUARES_ID_VS_INDEX_MAP[sourceSquareId];
   let index = sourceSquareIndex;
   while (index > 7) {
@@ -594,7 +580,7 @@ export const getAllPossibleRookTargetIndeces = (
       break;
     }
   }
-  console.log(allPossibleRookTargetIndeces);
+  // console.log(allPossibleRookTargetIndeces);
   return allPossibleRookTargetIndeces;
 };
 
@@ -611,11 +597,7 @@ export const getFilteredPossibleRookTargetIndeces = (
     sourceSquareId
   );
   if (ownKingInCheckMap.size > 0) {
-    // const isMoveRestricted = Array.from(ownKingInCheckMap.values()).some(
-    //   (attackingPath) =>
-    //     new Set(attackingPath).has(SQUARES_ID_VS_INDEX_MAP[sourceSquareId])
-    // );
-    console.log(Array.from(ownKingInCheckMap.values())[0]);
+    // console.log(Array.from(ownKingInCheckMap.values())[0]);
     const attackSquareIndeces = new Set(
       Array.from(ownKingInCheckMap.values())[0]
     );
@@ -651,9 +633,7 @@ export const isInvalidQueenMove = (
 };
 
 export const getAllPossibleKingTargetIndeces = (peiceType, sourceSquareId) => {
-  // const ownKingInCheckMap = getOwnKingInCheckMap(peiceType, sourceSquareId);
   const possibleKingTargetIndeces = new Set();
-  // if (ownKingInCheckMap.size > 1) return possibleKingTargetIndeces;
   const sourceSquareIndex = SQUARES_ID_VS_INDEX_MAP[sourceSquareId];
   if (sourceSquareIndex > 7 && sourceSquareIndex % 8 > 0) {
     const checkObstacleRes = checkObstacle(peiceType, sourceSquareIndex - 9);
@@ -703,7 +683,6 @@ export const getFilteredPossibleKingTargetIndeces = (
   sourceSquareId
 ) => {
   const ownKingInCheckMap = getOwnKingInCheckMap(peiceType, sourceSquareId);
-  // const isOwnKingInCheck = !!ownKingInCheckMap.size;
   const allPossibleKingTargetIndeces = getAllPossibleKingTargetIndeces(
     peiceType,
     sourceSquareId
@@ -714,12 +693,9 @@ export const getFilteredPossibleKingTargetIndeces = (
 
   let allOpponentAttackedIndeces = new Set();
   const sourceSquareEl = document.querySelector(`#${sourceSquareId}`);
-  // let currentKingSquareEl = sourceSquareEl;
   const ownKingPeiceImgEl = document.querySelector(`.${peiceType}`);
 
-  // console.log(ownKingPeice, "ownKingPeice");
   allPossibleKingTargetIndeces.forEach((index) => {
-    // currentKingSquareEl.removeChild(ownKingPeiceImgEl);
     const currentKingSquareEl = document.querySelector(
       `#${SQUARES_INDEX_VS_ID_MAP[index]}`
     );
@@ -740,7 +716,6 @@ export const getFilteredPossibleKingTargetIndeces = (
       document.querySelectorAll(`.square > img.${opponentColor}`)
     );
 
-    // currentKingSquareEl.appendChild(possibleTargetSquareImgEl);
     opponentPeiceEls.forEach((opponentPeice) => {
       const opponentPeiceType = opponentPeice.classList[1];
       let attackedIndeces;
@@ -750,7 +725,7 @@ export const getFilteredPossibleKingTargetIndeces = (
           attackedIndeces = getAllPossiblePawnTargetIndeces(
             opponentPeiceType,
             opponentPeice.parentNode.id
-          );
+          )[1];
           allOpponentAttackedIndeces = new Set([
             ...allOpponentAttackedIndeces,
             ...attackedIndeces,
@@ -821,10 +796,6 @@ export const getFilteredPossibleKingTargetIndeces = (
       if (allOpponentAttackedIndeces.has(index))
         filteredPossibleKingTargetIndeces.delete(index);
     });
-    // currentKingSquareEl.replaceChild(
-    //   possibleTargetSquareImgEl,
-    //   ownKingPeiceImgEl
-    // );
     if (possibleTargetSquareImgEl) {
       currentKingSquareEl.replaceChild(
         possibleTargetSquareImgEl,
@@ -835,12 +806,6 @@ export const getFilteredPossibleKingTargetIndeces = (
     }
   });
   sourceSquareEl.appendChild(ownKingPeiceImgEl);
-  // allPossibleKingTargetIndeces.forEach((index) => {
-  //   Array.from(ownKingInCheckMap.values()).forEach((attackingPath) => {
-  //     if (attackingPath.includes(index))
-  //       filteredPossibleKingTargetIndeces.delete(index);
-  //   });
-  // });
   return filteredPossibleKingTargetIndeces;
 };
 
@@ -859,10 +824,9 @@ export const getIsOpponentKingCheckMated = (opponentColor) => {
   const opponentPeicesEl = document.querySelectorAll(
     `img.peice.${opponentColor}`
   );
-  console.log(opponentPeicesEl, "opponentPeicesEl");
+
+  // console.log(opponentPeicesEl, "opponentPeicesEl");
   const movable = Array.from(opponentPeicesEl).map((opponentPeiceEl) => {
-    // const opponentElIndex =
-    //   SQUARES_ID_VS_INDEX_MAP[opponentPeiceEl.parentNode.id];
     const opponentPeiceType = opponentPeiceEl.classList[1];
     switch (opponentPeiceType) {
       case "wp":
@@ -930,10 +894,74 @@ export const getIsOpponentKingCheckMated = (opponentColor) => {
     }
     return true;
   });
-  // console.log(movable, "rest");
-  // console.log(
-  //   movable.every((item) => item),
-  //   "rest"
-  // );
-  return !movable.includes(false);
+  const ownColor = opponentColor === "white" ? "black" : "white";
+  const ownPeicesEl = Array.from(
+    document.querySelectorAll(`.square > img.${ownColor}`)
+  );
+  const opponentKingSquareEl = document.querySelector(
+    `img.peice.${opponentColor.at(0)}k`
+  ).parentNode;
+  const opponentKingSquareIndex =
+    SQUARES_ID_VS_INDEX_MAP[opponentKingSquareEl.id];
+  const isOpponentKingInCheck = Array.from(ownPeicesEl).some((ownPeiceEl) => {
+    const ownPeiceType = ownPeiceEl.classList[1];
+    let attackedIndeces;
+    switch (ownPeiceType) {
+      case "wp":
+      case "bp":
+        attackedIndeces = getAllPossiblePawnTargetIndeces(
+          ownPeiceType,
+          ownPeiceEl.parentNode.id
+        )[1];
+        if (attackedIndeces.has(opponentKingSquareIndex)) return true;
+        break;
+      case "wr":
+      case "br":
+        attackedIndeces = getAllPossibleRookTargetIndeces(
+          ownPeiceType,
+          ownPeiceEl.parentNode.id
+        );
+        if (attackedIndeces.has(opponentKingSquareIndex)) return true;
+        break;
+      case "wn":
+      case "bn":
+        attackedIndeces = getAllPossibleKnightTargetIndeces(
+          ownPeiceType,
+          ownPeiceEl.parentNode.id
+        );
+        if (attackedIndeces.has(opponentKingSquareIndex)) return true;
+        break;
+      case "wb":
+      case "bb":
+        attackedIndeces = getAllPossibleBishopTargetIndeces(
+          ownPeiceType,
+          ownPeiceEl.parentNode.id
+        );
+        if (attackedIndeces.has(opponentKingSquareIndex)) return true;
+        break;
+      case "wq":
+      case "bq":
+        attackedIndeces = new Set([
+          ...getAllPossibleBishopTargetIndeces(
+            ownPeiceType,
+            ownPeiceEl.parentNode.id
+          ),
+          ...getAllPossibleRookTargetIndeces(
+            ownPeiceType,
+            ownPeiceEl.parentNode.id
+          ),
+        ]);
+        if (attackedIndeces.has(opponentKingSquareIndex)) return true;
+        break;
+      default:
+        attackedIndeces = getAllPossibleKingTargetIndeces(
+          ownPeiceType,
+          ownPeiceEl.parentNode.id
+        );
+        if (attackedIndeces.has(opponentKingSquareIndex)) return true;
+        break;
+    }
+  });
+
+  return [isOpponentKingInCheck, !movable.includes(false)];
 };
